@@ -1,0 +1,141 @@
+template<class K,class V>
+class HashTable
+{
+public:
+	HashTable(size_t capacity = 10)
+		:_capacity(capacity)
+		, _size(0)
+	{
+		_hashTable = new pair<K,V>[_capacity];
+		_statue = new Statue[_capacity];
+		memset(_statue, EMPTY, sizeof(_statue)*_capacity);
+	}
+
+	bool Insert(const K&key,const V&value)
+	{
+		CheckCapacity();
+		size_t index = HashFunction2(key);
+		size_T i = 1;
+		while (_statue[index] == EXIST)
+		{
+			if (_hashTable[index] == key)
+				return false;
+
+			index=HashFunction2(index, i);
+		}
+
+		_hashTable[index] = pair<K,V>(key,value);
+		_statue[index] = EXIST;
+		_size++;
+		return true;
+	}
+
+	bool Remove(const T&key)
+	{
+		size_t index = 0;
+		if (Find(key, index))
+		{
+			_statue[index] = DELETE;
+			_size--;
+			return true;
+		}
+		return false;
+	}
+
+	~HashTable()
+	{
+		if (_hashTable)
+		{
+			delete[]_hashTable;
+			_hashTable = NULL;
+		}
+		if (_statue)
+		{
+			delete[]_statue;
+			_statue = NULL;
+		}
+	}
+
+	bool Find(const T&key, size_t& hashidx)
+	{
+		size_t index = HashFunction(key);
+		hashidx = index;
+		size_t i = 1;
+
+		while (_statue[hashidx] != EMPTY)
+		{
+			if (_hashTable[hashidx].first == key &&_statue[hashidx] == EXIST)
+				return true;
+			
+			hashidx  = HashFunction2(hashidx, i++);
+		}
+		return false;
+	}
+
+private:
+	int HashFunction1(const T&key)
+	{
+		return key % _capacity;
+	} 
+
+	int HashFunction2(size_t prevHashidx,size_t i)
+	{
+		return (prevHashidx + (i>>1)-1)%_capacity;
+	}
+
+	void CheckCapacity()
+	{
+		// 0.7~0.8
+		size_t capacity;
+		if (_size / _capacity >= 0.7)
+		{
+			capacity = GetNextPrim(_capacity);
+
+			HashTable<K, V> ht(capacity);
+			for (size_t index = 0; index < _capacity; ++index)
+			{
+				if (EXIST == _state[index])
+					ht.Insert(_hashTable[index].first, _hashTable[index].second);
+
+			}
+
+			Swap(ht);
+		}
+	}
+
+	void Swap(HashTable<K, V>& ht)
+	{
+		std::swap(_hashTable, ht._hashTable);
+		std::swap(_state, ht._state);
+		std::swap(_capacity, ht._capacity);
+		std::swap(_size, ht._size);
+	}
+	size_t GetNextPrim(size_t prev)//prev = 10
+	{
+		const int _PrimeSize = 28;
+		static const unsigned long _PrimeList[_PrimeSize] =
+		{
+			53ul, 97ul, 193ul, 389ul, 769ul,
+			1543ul, 3079ul, 6151ul, 12289ul, 24593ul,
+			49157ul, 98317ul, 196613ul, 393241ul, 786433ul,
+			1572869ul, 3145739ul, 6291469ul, 12582917ul, 25165843ul,
+			50331653ul, 100663319ul, 201326611ul, 402653189ul, 805306457ul,
+			1610612741ul, 3221225473ul, 4294967291ul
+		};
+
+
+		for (size_t idx = 0; idx < _PrimeSize; ++idx)
+		{
+			if (prev < _PrimeList[idx])
+				return _PrimeList[idx];
+		}
+
+		return -1;
+	}
+
+private:
+	size_t _size;
+	size_t _capacity;
+	pair<K,V>* _hashTable;
+	Statue *_statue;
+};
